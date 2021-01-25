@@ -4,13 +4,15 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.http import Http404
 
 from .models import User, Listing
-
+from .forms import ListingForm
 
 def index(request):
+    print (Listing.objects.all())
     return render(request, "auctions/index.html", {
-        "listings": Listing.objects.all()
+        "listings": Listing.objects.filter(active=False) # query for only active listings
     })
 
 
@@ -68,20 +70,32 @@ def register(request):
 @login_required         # how to redirect a user if not logged in
 def createListing(request):
     if request.method == "POST":
-        return HttpResponseRedirect(reverse("index"))
-        # to do
-        # validate form data
-        # check if listing exists
-            # if user/listing combo does not already exist
-                # create listing
-                # https://docs.djangoproject.com/en/3.1/ref/models/instances/
-                # redirect to newly created listing
-            # else if it already exists or if fails
-                # return to create listing page with error message
-
-        
+        form = ListingForm(request.POST)
+        if form.is_valid(): # check if listing exists?
+            data = form.cleaned_data
+            listing = Listing.create(
+                title=data['title'],
+                description=data['description'],
+                startingBid=data['startingBid'],
+                imageURL=data['imageURL'],
+                category=data['category'],
+                userID=User.objects.get(pk=request.user.id)
+            )
+            listing.save()
+            return HttpResponseRedirect(reverse("index")) # todo: render newly created listing
+        else: # need validation error handling
+            raise Http404
     else:
-        return render(request, "auctions/createListing.html")
+        form = ListingForm()
+        return render(request, "auctions/createListing.html", {
+            "form": form
+        })
 
 def viewListing(request, listing_id):
     return render(request, "auctions/index.html")
+    # can only view inactive listings if logged in
+
+
+    # https://docs.djangoproject.com/en/3.1/topics/i18n/timezones/ render template with local timezone
+
+    # editListing, need login_required
