@@ -6,6 +6,15 @@ from django.utils import timezone
 
 class User(AbstractUser):
     pass
+    # add watchlist; one user can have many listings on his watchlist; one listing can be on many user's watchlist; many to many relationship
+    # how to get all listings created by a user?
+    # add permissions to edit a listing object instance
+        # has_view_permission()
+        # has_change_permission()
+        # has_delete_permission()
+    # user groups
+        # is it good practice to set a group per listing?
+
 
 class Listing(models.Model):
     title = models.CharField(max_length=50)

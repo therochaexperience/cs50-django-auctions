@@ -15,7 +15,6 @@ def index(request):
         "listings": Listing.objects.filter(active=False) # query for only active listings
     })
 
-
 def login_view(request):
     if request.method == "POST":
 
@@ -67,7 +66,7 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
-@login_required         # how to redirect a user if not logged in
+@login_required
 def createListing(request):
     if request.method == "POST":
         form = ListingForm(request.POST)
@@ -91,11 +90,33 @@ def createListing(request):
             "form": form
         })
 
+# update listing
+
 def viewListing(request, listing_id):
-    return render(request, "auctions/index.html")
+    # check if listing is active or inactive
+    # check if listing exists
+    # if user authenticated, pass user_id from request
+    listing = Listing.objects.get(pk=listing_id)
+    return render(request, "auctions/listing.html", {
+        "listing": listing
+    })
     # can only view inactive listings if logged in
 
+@login_required
+def watchList(request):
+    print (Listing.objects.all())
+    return render(request, "auctions/index.html", {
+        "listings": Listing.objects.filter(active=False) # query for only active listings
+    })
+
+def categories(request):
+    print (Listing.objects.all())
+    return render(request, "auctions/index.html", {
+        "listings": Listing.objects.filter(active=False) # query for only active listings
+    })
 
     # https://docs.djangoproject.com/en/3.1/topics/i18n/timezones/ render template with local timezone
 
     # editListing, need login_required
+
+# create viewUser

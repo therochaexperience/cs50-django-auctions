@@ -7,9 +7,10 @@ urlpatterns = [
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path("register", views.register, name="register"),
-    path("createListing", views.createListing, name="createListing")
-#,     path("viewListing/<int:listing_id>", views.viewListing, name="viewListing")
-
+    path("createListing", views.createListing, name="createListing"),
+    path("watchList", views.watchList, name="watchList"),
+    path("categories", views.categories, name="categories"),
+    path("viewListing/<int:listing_id>", views.viewListing, name="viewListing")
 ]
 
 # Overloading createListing method. If called with no parameter, render page.

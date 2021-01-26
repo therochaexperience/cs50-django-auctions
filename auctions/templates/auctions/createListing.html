@@ -1,25 +1,12 @@
 {% extends "auctions/layout.html" %}
+{% block title %}Create a Listing{% endblock %}
 {% block body %}
     <h2>Create an Auction Listing</h2>
     <form action="{% url 'createListing' %}" method="post">
         {% csrf_token %}
         {{ form }}
         <input class="btn btn-primary" type="submit" value="Submit Listing">
-        <!-- <div class="form-group">
-            <input class="form-control" type="text" name="title"placeholder="Listing Title">
-        </div>
-        <div class="form-group">
-            <textarea class="form-control" rows="3" name="description"placeholder="Description"></textarea>
-        </div>
-        <div class="form-group">
-            <label for="startingBid">Enter the Starting Bid:</label>
-            <input class="form-control" type="number" name="startingBid"min="0.01" step="0.01" value="" placeholder="$0.01">
-        </div>
-        <div class="form-group">
-            <input class="form-control" type="url" name="imageURL"placeholder="Enter a URL for the Listing Image">
-        </div>
-        <div class="form-group">
-            <input class="form-control" type="text" name="category"placeholder="Listing Category">
-        </div> -->
     </form>
 {% endblock %}
+
+<!-- create and update listings -->

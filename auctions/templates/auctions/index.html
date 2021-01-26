@@ -1,10 +1,13 @@
 {% extends "auctions/layout.html" %}
+{% block title %}
+    Active Listings
+{% endblock %}
 {% block body %}
     <h2>Active Listings</h2>
 
     {% for listing in listings %}
     <li>
-        <a href="">
+        <a href="{% url 'viewListing' listing.id %}">
             Listing {{ listing.id }}: {{ listing.title }} by {{ listing.owner }} created on {{ listing.created_at}}
         </a>
     </li>
