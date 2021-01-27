@@ -5,7 +5,7 @@
 {% block body %}
     <h2>Update Listing</h2>
     <h5>{{ listing.title }}</h5>
-    <form action="{% url 'updateListing' %}" method="post">
+    <form action="{% url 'updateListing' listing.id %}" method="post">
         {% csrf_token %}
         {{ form }}
         <input class="btn btn-primary" type="submit" value="Submit Listing Updates">

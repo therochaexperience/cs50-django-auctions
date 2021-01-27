@@ -10,7 +10,8 @@ urlpatterns = [
     path("createListing", views.createListing, name="createListing"),
     path("watchList", views.watchList, name="watchList"),
     path("categories", views.categories, name="categories"),
-    path("viewListing/<int:listing_id>", views.viewListing, name="viewListing")
+    path("viewListing/<int:listingID>", views.viewListing, name="viewListing"),
+    path("updateListing/<int:listingID>", views.updateListing, name="updateListing")
 ]
 
 # Overloading createListing method. If called with no parameter, render page.

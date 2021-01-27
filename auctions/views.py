@@ -5,6 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.http import Http404
+from django.forms.models import model_to_dict
 
 from .models import User, Listing
 from .forms import ListingForm
@@ -73,7 +74,7 @@ def logout_view(request):
 def createListing(request):
     if request.method == "POST":
         form = ListingForm(request.POST)
-        if form.is_valid(): # check if listing exists?
+        if form.is_valid(): # check if listing exists? all listings are unique by pk. other fields to set unique by?
             data = form.cleaned_data
             listing = Listing.create(
                 title=data['title'],
@@ -93,26 +94,45 @@ def createListing(request):
             "form": form
         })
 
-# @login_required
-# update listing
-    # if user is listing owner
-        # if post request
-            # return createListing(request), this will render view
-        # else
-            # form = ListingForm()
-            # prepopulate form with values from listing.id
-            # render updatelisting with form
-    # else
-        # render original listing with error message
+@login_required
+def updateListing(request, listingID):
+    listing = Listing.objects.get(pk=listingID)
+    if request.user.id == listing.owner.id:
+        if request.method == "POST":
+            form = ListingForm(request.POST)
+            if form.is_valid():
+                data = form.cleaned_data
+                listing.title = data['title']
+                listing.description=data['description']
+                listing.startingBid=data['startingBid']
+                listing.imageURL=data['imageURL']
+                listing.category=data['category']
+                listing.save()
+                return HttpResponseRedirect(reverse("viewListing", args=[listing.id]))
+            else: # need validation error handling
+                raise Http404
+        else: # GET request
+            form = ListingForm(model_to_dict(listing)) # populate form with existing values of listing
+            return render(request, "auctions/updateListing.html", {
+                "listing": listing,
+                "form": form
+            })    
+    else:
+        return render(request, "auctions/listing.html", {
+            "listing": listing,
+            "error": True,
+            "errorMessage": "Not able to update this listing"
+        })
 
 @login_required
-def viewListing(request, listing_id):
+def viewListing(request, listingID):
     # check if listing is active or inactive
     # check if listing exists
     # if user authenticated, pass user_id from request
-    listing = Listing.objects.get(pk=listing_id)
+    listing = Listing.objects.get(pk=listingID)
     return render(request, "auctions/listing.html", {
-        "listing": listing
+        "listing": listing,
+        "error": False
     })
     # can only view inactive listings if logged in
 

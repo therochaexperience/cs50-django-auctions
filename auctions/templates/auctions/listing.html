@@ -4,15 +4,17 @@
 {% endblock %}
 {% block body %}
     <h2>Listing: {{ listing.title }}</h2>
-    
-    <!-- if logged in -->
-        <!-- add watchlist widget -->
-        <!-- if user.id = owner.id -->
-            <!-- add button to edit listing -->
-                <!-- post listing.id to updateListing view -->
-    <!-- endif -->
+    {% if error %}
+        <strong>{{ errorMessage }}</strong>.
+    {% endif %}
+    {% if user.is_authenticated %}
+        <strong>Add to Watchlist Widget</strong>.
+        {% if user.id == listing.owner.id %}
+            <a class="nav-link" href="{% url 'updateListing' listing.id %}">Update Listing</a>
+        {% endif %}
+    {% endif %}
+
     <!-- add image of listing -->
-    <!-- name of listing -->
     <!-- current bid -->
     <!-- if logged in DRY?? -->
         <!-- start bid form -->
@@ -22,7 +24,7 @@
     <!-- endif -->    
     <h5>Details</h5>
     <ul>
-        <li>Listed by: {{ listing.owner }}</li>
-        <li>Category: {{ listing.category }}</li>
+        <li>Listed by: {{ listing.owner }}</li> <!--link to userpage-->
+        <li>Category: {{ listing.category }}</li> <!--link to category-->
     </ul>
 {% endblock %}
