@@ -9,6 +9,8 @@ from django.http import Http404
 from .models import User, Listing
 from .forms import ListingForm
 
+# Views allowing anonymous users
+
 def index(request):
     print (Listing.objects.all())
     return render(request, "auctions/index.html", {
@@ -33,12 +35,6 @@ def login_view(request):
             })
     else:
         return render(request, "auctions/login.html")
-
-@login_required
-def logout_view(request):
-    logout(request)
-    return HttpResponseRedirect(reverse("index"))
-
 
 def register(request):
     if request.method == "POST":
@@ -66,6 +62,13 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
+# Views requiring a logged-in user
+
+@login_required
+def logout_view(request):
+    logout(request)
+    return HttpResponseRedirect(reverse("index"))
+
 @login_required
 def createListing(request):
     if request.method == "POST":
@@ -81,7 +84,7 @@ def createListing(request):
                 userID=User.objects.get(pk=request.user.id)
             )
             listing.save()
-            return HttpResponseRedirect(reverse("index")) # todo: render newly created listing
+            return HttpResponseRedirect(reverse("viewListing", args=[listing.id]))
         else: # need validation error handling
             raise Http404
     else:
@@ -90,8 +93,19 @@ def createListing(request):
             "form": form
         })
 
+# @login_required
 # update listing
+    # if user is listing owner
+        # if post request
+            # return createListing(request), this will render view
+        # else
+            # form = ListingForm()
+            # prepopulate form with values from listing.id
+            # render updatelisting with form
+    # else
+        # render original listing with error message
 
+@login_required
 def viewListing(request, listing_id):
     # check if listing is active or inactive
     # check if listing exists
@@ -109,6 +123,7 @@ def watchList(request):
         "listings": Listing.objects.filter(active=False) # query for only active listings
     })
 
+@login_required
 def categories(request):
     print (Listing.objects.all())
     return render(request, "auctions/index.html", {
@@ -120,3 +135,4 @@ def categories(request):
     # editListing, need login_required
 
 # create viewUser
+# how apply decorator to multiple views

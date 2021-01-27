@@ -42,3 +42,5 @@ urlpatterns = [
 
 # authentication
 # https://docs.djangoproject.com/en/3.0/topics/auth/default/#the-login-required-decorator
+
+# how to bulk load a csv file
