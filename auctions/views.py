@@ -6,6 +6,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.http import Http404
 from django.forms.models import model_to_dict
+from django.core.exceptions import ObjectDoesNotExist
 
 from .models import User, Listing
 from .forms import ListingForm
@@ -13,9 +14,10 @@ from .forms import ListingForm
 # Views allowing anonymous users
 
 def index(request):
-    print (Listing.objects.all())
+    #print (Listing.objects.all())
+    # add error and errormessage
     return render(request, "auctions/index.html", {
-        "listings": Listing.objects.filter(active=False) # query for only active listings
+        "listings": Listing.objects.filter(active=True) # query for only active listings
     })
 
 def login_view(request):
@@ -107,6 +109,7 @@ def updateListing(request, listingID):
                 listing.startingBid=data['startingBid']
                 listing.imageURL=data['imageURL']
                 listing.category=data['category']
+                listing.active=data['active']
                 listing.save()
                 return HttpResponseRedirect(reverse("viewListing", args=[listing.id]))
             else: # need validation error handling
@@ -126,21 +129,63 @@ def updateListing(request, listingID):
 
 @login_required
 def viewListing(request, listingID):
-    # check if listing is active or inactive
-    # check if listing exists
-    # if user authenticated, pass user_id from request
+    # try
     listing = Listing.objects.get(pk=listingID)
-    return render(request, "auctions/listing.html", {
-        "listing": listing,
-        "error": False
-    })
-    # can only view inactive listings if logged in
+    # except
+        # redirect to index with error message, listingID does not exist; how redirect with args
+    if listing.active:
+        if listing.owner.id == request.user.id:
+            return render(request, "auctions/listing.html", {
+                "listing": listing,
+                "error": False,
+                "owner": True
+            })
+        else:
+            try:
+                if request.user.watchList.get(pk=listingID): 
+                    return render(request, "auctions/listing.html", {
+                        "on_watchList": True,
+                        "listing": listing,
+                        "error": False,
+                        "owner": False
+                    })                    
+            except ObjectDoesNotExist:
+                return render(request, "auctions/listing.html", {
+                    "on_watchList": False,
+                    "listing": listing,
+                    "error": False,
+                    "owner": False
+                })
+    else: # Listing not active
+        # add redirect to index with error message stating that listing is no longer active
+        # can only view inactive listings if logged in and owner
+        return render(request, "auctions/listing.html", {
+            "listing": listing,
+            "error": True,
+            "errorMessage": "This listing is no longer active"
+        })
 
 @login_required
-def watchList(request):
-    print (Listing.objects.all())
-    return render(request, "auctions/index.html", {
-        "listings": Listing.objects.filter(active=False) # query for only active listings
+def add_watchList(request, listingID):
+    # Add a listing to a User's watchlist; assumes user is not owner of listing
+    listing = Listing.objects.get(pk=listingID)
+    request.user.watchList.add(listing)
+    request.user.save()
+    return HttpResponseRedirect(reverse("viewListing", args=[listing.id]))
+
+@login_required
+def remove_watchList(request, listingID):
+    # Remove a listing from a User's watchlist
+    listing = Listing.objects.get(pk=listingID)
+    request.user.watchList.remove(listing)
+    request.user.save()
+    return HttpResponseRedirect(reverse("viewListing", args=[listing.id]))
+
+@login_required
+def view_watchList(request):
+    # View a User's watchlist
+    return render(request, "auctions/watchList.html", {
+        "listings": request.user.watchList.all()
     })
 
 @login_required
@@ -150,9 +195,7 @@ def categories(request):
         "listings": Listing.objects.filter(active=False) # query for only active listings
     })
 
-    # https://docs.djangoproject.com/en/3.1/topics/i18n/timezones/ render template with local timezone
 
-    # editListing, need login_required
-
+# https://docs.djangoproject.com/en/3.1/topics/i18n/timezones/ render template with local timezone
 # create viewUser
 # how apply decorator to multiple views

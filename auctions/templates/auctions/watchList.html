@@ -1,0 +1,18 @@
+{% extends "auctions/layout.html" %}
+{% block title %}
+    {{ user }}'s Watchlist
+{% endblock %}
+{% block body %}
+    <h2>{{ user }}'s Watchlist</h2>
+    {% if listings %}
+        {% for listing in listings %}
+        <li>
+            <a href="{% url 'viewListing' listing.id %}">
+                Listing {{ listing.id }}: {{ listing.title }} by {{ listing.owner }} created on {{ listing.created_at}}
+            </a>
+        </li>
+        {% endfor %}
+    {% else %}
+        <strong>No listings on your Watchlist</strong>
+    {% endif %}
+{% endblock %}

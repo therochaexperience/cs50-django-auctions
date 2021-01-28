@@ -3,28 +3,41 @@
     {{ listing.title }}
 {% endblock %}
 {% block body %}
-    <h2>Listing: {{ listing.title }}</h2>
+
     {% if error %}
-        <strong>{{ errorMessage }}</strong>.
-    {% endif %}
-    {% if user.is_authenticated %}
-        <strong>Add to Watchlist Widget</strong>.
-        {% if user.id == listing.owner.id %}
-            <a class="nav-link" href="{% url 'updateListing' listing.id %}">Update Listing</a>
-        {% endif %}
+        <strong>{{ errorMessage }}</strong>
     {% endif %}
 
+    <h2>Listing: {{ listing.title }}</h2>
+
+    {% if owner %}
+        <a class="nav-link" href="{% url 'updateListing' listing.id %}">Update Listing</a>
+        <a class="nav-link" href="">Close the Auction</a>
+    {% else %}  
+        {% if on_watchList %}
+            <form action="{% url 'remove_watchList' listing.id %}" method="post">
+                {% csrf_token %}
+                <input class="btn btn-primary" type="submit" value="Remove from Watchlist">
+            </form>
+        {% else %}
+            <form action="{% url 'add_watchList' listing.id %}" method="post">
+                {% csrf_token %}
+                <input class="btn btn-primary" type="submit" value="Add to Watchlist">
+            </form>
+        {% endif %}
+    {% endif %}
+  
+    <h5>Details</h5>
     <!-- add image of listing -->
-    <!-- current bid -->
+    <ul>
+        <li>Listed by: {{ listing.owner }}</li> <!--link to userpage-->
+        <li>Category: {{ listing.category }}</li> <!--link to category-->
+    </ul>
+    <!-- current bid MOVE UP?-->
     <!-- if logged in DRY?? -->
         <!-- start bid form -->
             <!-- input for bid amount -->
             <!-- submit button to place bid -->
         <!-- end bid form -->
-    <!-- endif -->    
-    <h5>Details</h5>
-    <ul>
-        <li>Listed by: {{ listing.owner }}</li> <!--link to userpage-->
-        <li>Category: {{ listing.category }}</li> <!--link to category-->
-    </ul>
+    <!-- endif -->  
 {% endblock %}

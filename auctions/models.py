@@ -5,7 +5,8 @@ from decimal import Decimal
 from django.utils import timezone
 
 class User(AbstractUser):
-    pass
+    watchList = models.ManyToManyField('Listing') # Followers are Users that have added a Listing to their Watchlist; how to prevent owner from following their own Listing
+
     # add watchlist; one user can have many listings on his watchlist; one listing can be on many user's watchlist; many to many relationship
     # how to get all listings created by a user?
     # add permissions to edit a listing object instance

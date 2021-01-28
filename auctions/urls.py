@@ -4,14 +4,16 @@ from . import views
 
 urlpatterns = [
     path("", views.index, name="index"),
+    path("register", views.register, name="register"),
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
-    path("register", views.register, name="register"),
-    path("createListing", views.createListing, name="createListing"),
-    path("watchList", views.watchList, name="watchList"),
     path("categories", views.categories, name="categories"),
+    path("createListing", views.createListing, name="createListing"),
     path("viewListing/<int:listingID>", views.viewListing, name="viewListing"),
-    path("updateListing/<int:listingID>", views.updateListing, name="updateListing")
+    path("updateListing/<int:listingID>", views.updateListing, name="updateListing"),
+    path("view_watchList", views.view_watchList, name="view_watchList"), # View a user's watchlist; user needs to be authenticated
+    path("add_watchList/<int:listingID>", views.add_watchList, name="add_watchList"),
+    path("remove_watchList/<int:listingID>", views.remove_watchList, name="remove_watchList")
 ]
 
 # Overloading createListing method. If called with no parameter, render page.

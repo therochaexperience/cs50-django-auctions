@@ -4,7 +4,9 @@
 {% endblock %}
 {% block body %}
     <h2>Active Listings</h2>
-
+    {% if error %}
+        <strong>{{ errorMessage }}</strong>
+    {% endif %}
     {% for listing in listings %}
     <li>
         <a href="{% url 'viewListing' listing.id %}">
