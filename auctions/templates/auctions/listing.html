@@ -13,23 +13,33 @@
     {% if owner %}
         <a class="nav-link" href="{% url 'updateListing' listing.id %}">Update Listing</a>
         <a class="nav-link" href="">Close the Auction</a>
-    {% else %}  
-        {% if on_watchList %}
-            <form action="{% url 'remove_watchList' listing.id %}" method="post">
+    {% else %}
+        {% if listing.active %}
+            {% if on_watchList %}
+                <form action="{% url 'remove_watchList' listing.id %}" method="post">
+                    {% csrf_token %}
+                    <input class="btn btn-primary" type="submit" value="Remove from Watchlist">
+                </form>
+            {% else %}
+                <form action="{% url 'add_watchList' listing.id %}" method="post">
+                    {% csrf_token %}
+                    <input class="btn btn-primary" type="submit" value="Add to Watchlist">
+                </form>
+            {% endif %}
+
+            <form action="{% url 'submitBid' listing.id %}" method="post">
                 {% csrf_token %}
-                <input class="btn btn-primary" type="submit" value="Remove from Watchlist">
+                {{ bidForm }}
+                <input class="btn btn-primary" type="submit" value="Submit a Bid">
             </form>
-        {% else %}
-            <form action="{% url 'add_watchList' listing.id %}" method="post">
-                {% csrf_token %}
-                <input class="btn btn-primary" type="submit" value="Add to Watchlist">
-            </form>
+
         {% endif %}
     {% endif %}
   
     <h5>Details</h5>
     <!-- add image of listing -->
     <ul>
+        <li>Current Bid: ${{ listing.currentBid }}</li> <!--hardcoded currency symbol, better option? -->
         <li>Listed by: {{ listing.owner }}</li> <!--link to userpage-->
         <li>Category: {{ listing.category }}</li> <!--link to category-->
     </ul>

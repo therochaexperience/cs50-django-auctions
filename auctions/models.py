@@ -21,45 +21,67 @@ class Listing(models.Model):
     title = models.CharField(max_length=50)
     description = models.TextField(max_length=1000)
     startingBid = models.DecimalField(
+        default=0.01,
         max_digits=5, 
         decimal_places=2, 
-        validators=[MinValueValidator(Decimal('0.01'))]) # not validating for min bid
-    # currentBid?
+        validators=[MinValueValidator(Decimal('0.01'))] # not validating for min bid
+    )
+    currentBid = models.DecimalField(
+        default=0.01,
+        max_digits=5, 
+        decimal_places=2, 
+        validators=[MinValueValidator(Decimal('0.01'))]
+    )
     imageURL = models.URLField()
     category = models.CharField(max_length=25)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True) # what is this doing?
     active = models.BooleanField(default=False)
     #dateTimeEndListing = models.DateTimeField() # change to durationfield?; add to createListing form
     owner = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="listingOwner",
+        related_name="listings",
         default='0')
 
     def __str__(self):
         return f"Listing {self.id}: {self.title} by User: {self.owner}"
 
     @classmethod # DRY?
-    def create(cls, title, description, startingBid, imageURL, category, userID):
+    def create(cls, title, description, startingBid, currentBid, imageURL, category, userID):
         listing = cls(
             title=title,
             description=description,
             startingBid=startingBid,
+            currentBid=currentBid,
             imageURL=imageURL,
             category=category,
             owner=userID)
         return listing
 
     # add method to update listing end datetime
-    # a list of bids
+    # a list of bids -> see Bid.listing related_name
     # a list of comments
 
-# bids
-    # which listing
-    # which user
-    # what amount
-    # date
+class Bid(models.Model):
+    listing = models.ForeignKey(
+        Listing,
+        on_delete=models.CASCADE,
+        related_name="bids_on_listing"
+    )
+    biddingUser = models.ForeignKey(
+        Listing,
+        on_delete=models.CASCADE,
+        related_name="bids_by_user"
+    )
+    bidAmount = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2, 
+        validators=[MinValueValidator(Decimal('0.01'))]  # how to validate minimum bid is greater than current bid on a listing?
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
 
 # comments
     # which listing

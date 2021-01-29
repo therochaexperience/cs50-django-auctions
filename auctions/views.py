@@ -9,7 +9,7 @@ from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
 from .models import User, Listing
-from .forms import ListingForm
+from .forms import ListingForm, BidForm
 
 # Views allowing anonymous users
 
@@ -82,6 +82,7 @@ def createListing(request):
                 title=data['title'],
                 description=data['description'],
                 startingBid=data['startingBid'],
+                currentBid=data['startingBid'], # currentBid starts at startingBid; foreign key to bids table?
                 imageURL=data['imageURL'],
                 category=data['category'],
                 userID=User.objects.get(pk=request.user.id)
@@ -141,20 +142,23 @@ def viewListing(request, listingID):
                 "owner": True
             })
         else:
-            try:
+            bidForm = BidForm()
+            try: # DRY?
                 if request.user.watchList.get(pk=listingID): 
                     return render(request, "auctions/listing.html", {
                         "on_watchList": True,
                         "listing": listing,
                         "error": False,
-                        "owner": False
+                        "owner": False,
+                        "bidForm": bidForm
                     })                    
             except ObjectDoesNotExist:
                 return render(request, "auctions/listing.html", {
                     "on_watchList": False,
                     "listing": listing,
                     "error": False,
-                    "owner": False
+                    "owner": False,
+                    "bidForm": bidForm
                 })
     else: # Listing not active
         # add redirect to index with error message stating that listing is no longer active
@@ -195,7 +199,24 @@ def categories(request):
         "listings": Listing.objects.filter(active=False) # query for only active listings
     })
 
+@login_required
+def submitBid(request, listingID):
+    # how do client-side validation to check bidAmount is higher than listing.currentBid
+    # try
+    listing = Listing.objects.get(pk=listingID)
+    # except
+        # redirect to index with error message, listingID does not exist; how redirect with args
+    if listing.active:
+        if listing.owner.id == request.user.id: # add error message saying you can't bid on your own listing
+            return HttpResponseRedirect(reverse("viewListing", args=[listing.id]))
+
+# close a listing
+    # closing a listing means listings are no longer active
+
+# create viewUser
+
+
+# add link for Your Bids
 
 # https://docs.djangoproject.com/en/3.1/topics/i18n/timezones/ render template with local timezone
-# create viewUser
 # how apply decorator to multiple views
