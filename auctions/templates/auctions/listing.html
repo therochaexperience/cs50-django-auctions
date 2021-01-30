@@ -4,8 +4,8 @@
 {% endblock %}
 {% block body %}
 
-    {% if error %}
-        <strong>{{ errorMessage }}</strong>
+    {% if message %}
+        <strong>{{ message }}</strong>
     {% endif %}
 
     <h2>Listing: {{ listing.title }}</h2>
@@ -26,13 +26,11 @@
                     <input class="btn btn-primary" type="submit" value="Add to Watchlist">
                 </form>
             {% endif %}
-
             <form action="{% url 'submitBid' listing.id %}" method="post">
                 {% csrf_token %}
                 {{ bidForm }}
                 <input class="btn btn-primary" type="submit" value="Submit a Bid">
             </form>
-
         {% endif %}
     {% endif %}
   
@@ -43,11 +41,12 @@
         <li>Listed by: {{ listing.owner }}</li> <!--link to userpage-->
         <li>Category: {{ listing.category }}</li> <!--link to category-->
     </ul>
-    <!-- current bid MOVE UP?-->
-    <!-- if logged in DRY?? -->
-        <!-- start bid form -->
-            <!-- input for bid amount -->
-            <!-- submit button to place bid -->
-        <!-- end bid form -->
-    <!-- endif -->  
+
+    <h5>Bids</h5>
+    {% for bid in bids %}
+    <li>
+            Bid Date/Time {{ bid.created_at }} Bid Amount {{ bid.amount }} by {{ bid.user }}
+    </li>
+    {% endfor %}
+
 {% endblock %}

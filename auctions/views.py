@@ -8,7 +8,7 @@ from django.http import Http404
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
-from .models import User, Listing
+from .models import User, Listing, Bid
 from .forms import ListingForm, BidForm
 
 # Views allowing anonymous users
@@ -120,53 +120,87 @@ def updateListing(request, listingID):
             return render(request, "auctions/updateListing.html", {
                 "listing": listing,
                 "form": form
-            })    
+            })
     else:
         return render(request, "auctions/listing.html", {
             "listing": listing,
-            "error": True,
-            "errorMessage": "Not able to update this listing"
+            "message": "Not able to update this listing"
         })
+@login_required
+def submitBid(request, listingID):
+    # how do client-side validation to check bidAmount is higher than listing.currentBid
+    
+    if request.method == "GET":
+        return HttpResponseRedirect(reverse("viewListing", args=[listingID]))
+    else:
+        try:
+            listing = Listing.objects.get(pk=listingID)
+        except:
+            return HttpResponseRedirect(reverse("index"))
+        if request.user == listing.owner.id or not listing.active:
+            return HttpResponseRedirect(reverse("viewListing", args=[listingID]))
+
+        bidForm = BidForm(request.POST)
+        invalid_bid_context = {
+            "listing": listing,
+            "on_watchList": True if request.user.watchList.filter(pk=listingID).count() > 0 else False,
+            "bids": listing.bids_on_listing.all(),
+            "bidForm": bidForm,
+            "message": "Invalid bid"
+        }
+        if bidForm.is_valid(): # create bid record
+            print(listing.bids_on_listing.all())
+            amount = bidForm.cleaned_data['amount']
+            if amount > listing.currentBid:
+                bid = Bid.create(
+                    listing = listing,
+                    user = User.objects.get(pk=request.user.id),
+                    amount = bidForm.cleaned_data['amount'])
+                bid.save()
+                listing.currentBid = bid.amount
+                listing.save()
+                return HttpResponseRedirect(reverse("viewListing", args=[listing.id]))
+            else:
+                return render(request, "auctions/listing.html", invalid_bid_context)
+        else: # need validation error handling
+            return render(request, "auctions/listing.html", invalid_bid_context)
 
 @login_required
 def viewListing(request, listingID):
-    # try
-    listing = Listing.objects.get(pk=listingID)
-    # except
-        # redirect to index with error message, listingID does not exist; how redirect with args
+    try:
+        listing = Listing.objects.get(pk=listingID)
+    except:
+        return HttpResponseRedirect(reverse("index"))
     if listing.active:
+        bids = listing.bids_on_listing.all()
         if listing.owner.id == request.user.id:
             return render(request, "auctions/listing.html", {
                 "listing": listing,
-                "error": False,
-                "owner": True
+                "owner": True,
+                "bids": bids
             })
         else:
             bidForm = BidForm()
             try: # DRY?
-                if request.user.watchList.get(pk=listingID): 
+                if request.user.watchList.get(pk=listingID):
                     return render(request, "auctions/listing.html", {
                         "on_watchList": True,
                         "listing": listing,
-                        "error": False,
-                        "owner": False,
-                        "bidForm": bidForm
-                    })                    
+                        "bidForm": bidForm,
+                        "bids": bids
+                    })
             except ObjectDoesNotExist:
                 return render(request, "auctions/listing.html", {
-                    "on_watchList": False,
                     "listing": listing,
-                    "error": False,
-                    "owner": False,
-                    "bidForm": bidForm
+                    "bidForm": bidForm,
+                    "bids": bids
                 })
     else: # Listing not active
         # add redirect to index with error message stating that listing is no longer active
         # can only view inactive listings if logged in and owner
         return render(request, "auctions/listing.html", {
             "listing": listing,
-            "error": True,
-            "errorMessage": "This listing is no longer active"
+            "message": "This listing is no longer active"
         })
 
 @login_required
@@ -194,21 +228,11 @@ def view_watchList(request):
 
 @login_required
 def categories(request):
-    print (Listing.objects.all())
     return render(request, "auctions/index.html", {
         "listings": Listing.objects.filter(active=False) # query for only active listings
     })
 
-@login_required
-def submitBid(request, listingID):
-    # how do client-side validation to check bidAmount is higher than listing.currentBid
-    # try
-    listing = Listing.objects.get(pk=listingID)
-    # except
-        # redirect to index with error message, listingID does not exist; how redirect with args
-    if listing.active:
-        if listing.owner.id == request.user.id: # add error message saying you can't bid on your own listing
-            return HttpResponseRedirect(reverse("viewListing", args=[listing.id]))
+
 
 # close a listing
     # closing a listing means listings are no longer active

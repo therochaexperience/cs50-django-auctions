@@ -26,7 +26,7 @@ class Listing(models.Model):
         decimal_places=2, 
         validators=[MinValueValidator(Decimal('0.01'))] # not validating for min bid
     )
-    currentBid = models.DecimalField(
+    currentBid = models.DecimalField( # who has done current bid, which is largest?
         default=0.01,
         max_digits=5, 
         decimal_places=2, 
@@ -69,19 +69,26 @@ class Bid(models.Model):
         on_delete=models.CASCADE,
         related_name="bids_on_listing"
     )
-    biddingUser = models.ForeignKey(
-        Listing,
+    user = models.ForeignKey(
+        User,
         on_delete=models.CASCADE,
         related_name="bids_by_user"
     )
-    bidAmount = models.DecimalField(
+    amount = models.DecimalField(
         max_digits=5, 
         decimal_places=2, 
-        validators=[MinValueValidator(Decimal('0.01'))]  # how to validate minimum bid is greater than current bid on a listing?
+        validators=[MinValueValidator(Decimal('0.01'))]
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
-
+   
+    @classmethod # DRY?
+    def create(cls, listing, user, amount):
+        bid = cls(
+            listing = listing,
+            user = user,
+            amount = amount)
+        return bid
 
 # comments
     # which listing

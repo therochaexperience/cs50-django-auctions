@@ -10,4 +10,7 @@ class ListingForm(ModelForm): # how to create initial values
 class BidForm(ModelForm):
     class Meta:
         model = Bid
-        fields = ['bidAmount']
+        fields = ['amount']
+        labels = {
+            "amount": "Bid Amount"
+        }
