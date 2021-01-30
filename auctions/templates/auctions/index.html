@@ -3,15 +3,27 @@
     Active Listings
 {% endblock %}
 {% block body %}
-    <h2>Active Listings</h2>
-    {% if error %}
-        <strong>{{ errorMessage }}</strong>
+    {% if message %}
+        <strong>{{ message }}</strong>
     {% endif %}
+    <h2>Active Listings</h2>
     {% for listing in listings %}
-    <li>
-        <a href="{% url 'viewListing' listing.id %}">
-            Listing {{ listing.id }}: {{ listing.title }} by {{ listing.owner }} created on {{ listing.created_at}}
-        </a>
-    </li>
+        {% if listing.active %}
+            <li>
+                <a href="{% url 'viewListing' listing.id %}">
+                    Listing {{ listing.id }}: {{ listing.title }} by {{ listing.owner }} created on {{ listing.created_at}}
+                </a>
+            </li>
+        {% endif %}
+    {% endfor %}
+    <h2>Closed Listings</h2>
+    {% for listing in listings %}
+        {% if not listing.active %}
+            <li>
+                <a href="{% url 'viewListing' listing.id %}">
+                    Listing {{ listing.id }}: {{ listing.title }} by {{ listing.owner }} created on {{ listing.created_at}}
+                </a>
+            </li>
+        {% endif %}
     {% endfor %}
 {% endblock %}

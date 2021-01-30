@@ -59,8 +59,9 @@ class Listing(models.Model):
             owner=userID)
         return listing
 
+
     # add method to update listing end datetime
-    # a list of bids -> see Bid.listing related_name
+
     # a list of comments
 
 class Bid(models.Model):

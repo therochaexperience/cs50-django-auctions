@@ -11,6 +11,7 @@ urlpatterns = [
     path("createListing", views.createListing, name="createListing"),
     path("viewListing/<int:listingID>", views.viewListing, name="viewListing"),
     path("updateListing/<int:listingID>", views.updateListing, name="updateListing"),
+    path("closeListing/<int:listingID>", views.closeListing, name="closeListing"),
     path("view_watchList", views.view_watchList, name="view_watchList"), # View a user's watchlist; user needs to be authenticated
     path("add_watchList/<int:listingID>", views.add_watchList, name="add_watchList"),
     path("remove_watchList/<int:listingID>", views.remove_watchList, name="remove_watchList"),

@@ -12,7 +12,7 @@
 
     {% if owner %}
         <a class="nav-link" href="{% url 'updateListing' listing.id %}">Update Listing</a>
-        <a class="nav-link" href="">Close the Auction</a>
+        <a class="nav-link" href="{% url 'closeListing' listing.id %}">Close the Auction</a>
     {% else %}
         {% if listing.active %}
             {% if on_watchList %}
@@ -37,15 +37,16 @@
     <h5>Details</h5>
     <!-- add image of listing -->
     <ul>
-        <li>Current Bid: ${{ listing.currentBid }}</li> <!--hardcoded currency symbol, better option? -->
-        <li>Listed by: {{ listing.owner }}</li> <!--link to userpage-->
-        <li>Category: {{ listing.category }}</li> <!--link to category-->
+        <li><strong>Current Bid:</strong> ${{ listing.currentBid }}</li> <!--hardcoded currency symbol, better option? -->
+        <li><strong>Listed by:</strong> {{ listing.owner }}</li> <!--link to userpage-->
+        <li><strong>Category:</strong> {{ listing.category }}</li> <!--link to category-->
+        <li><strong>Description:</strong> {{ listing.description }}</li> <!--link to category-->
     </ul>
 
     <h5>Bids</h5>
     {% for bid in bids %}
     <li>
-            Bid Date/Time {{ bid.created_at }} Bid Amount {{ bid.amount }} by {{ bid.user }}
+            Bid Date/Time {{ bid.created_at }} Bid Amount: ${{ bid.amount }} by {{ bid.user }}
     </li>
     {% endfor %}
 
