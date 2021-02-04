@@ -251,9 +251,16 @@ def view_watchList(request):
     })
 
 @login_required
-def categories(request):
+def categories(request): # treat like hashtags and allow users to add any they want? or provide preselected categories?
     return render(request, "auctions/categories.html")
 
+@login_required
+def addComment(request, listingID):
+    pass
+
+@login_required
+def deleteComment(request, listingID):
+    pass
 
 # def viewUser
 

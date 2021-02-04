@@ -44,10 +44,13 @@
     </ul>
 
     <h5>Bids</h5>
-    {% for bid in bids %}
-    <li>
-            Bid Date/Time {{ bid.created_at }} Bid Amount: ${{ bid.amount }} by {{ bid.user }}
-    </li>
-    {% endfor %}
-
+    {% if bids %}
+        {% for bid in bids %}
+        <li>
+                Bid Date/Time {{ bid.created_at }} Bid Amount: ${{ bid.amount }} by {{ bid.user }}
+        </li>
+        {% endfor %}
+    {% else %}
+        No bids have been made on this listing
+    {% endif %}
 {% endblock %}

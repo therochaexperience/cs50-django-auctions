@@ -15,7 +15,9 @@ urlpatterns = [
     path("view_watchList", views.view_watchList, name="view_watchList"), # View a user's watchlist; user needs to be authenticated
     path("add_watchList/<int:listingID>", views.add_watchList, name="add_watchList"),
     path("remove_watchList/<int:listingID>", views.remove_watchList, name="remove_watchList"),
-    path("submitBid/<int:listingID>", views.submitBid, name="submitBid")
+    path("submitBid/<int:listingID>", views.submitBid, name="submitBid"),
+    path("addComment/<int:listingID>", views.addComment, name="addComment"),
+    path("deleteComment/<int:listingID>", views.deleteComment, name="deleteComment")
 ]
 
 # Overloading createListing method. If called with no parameter, render page.
