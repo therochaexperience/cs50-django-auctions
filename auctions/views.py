@@ -129,38 +129,25 @@ def updateListing(request, listingID):
 
 @login_required
 def viewListing(request, listingID):
-    try:
+    try: # Check if listing exists
         listing = Listing.objects.get(pk=listingID)
+        context = {"listing":listing}
     except:
         return HttpResponseRedirect(reverse("index"))
-    bids = listing.bids_on_listing.all()
-    context = {"listing":listing, "bids": bids}
+    context["bids"] = listing.bids_on_listing.all()
     if listing.active:
         if listing.owner.id == request.user.id:
             context["owner"] = True
-            return render(request, "auctions/listing.html", context)
         else:
-            bidForm = BidForm()
-            try: # DRY?
+            context["bidForm"] = BidForm()
+            try: # Check if listing on user's watchlist
                 if request.user.watchList.get(pk=listingID):
-                    return render(request, "auctions/listing.html", {
-                        "on_watchList": True,
-                        "listing": listing,
-                        "bidForm": bidForm,
-                        "bids": bids
-                    })
+                    context["on_watchList"] = True
             except ObjectDoesNotExist:
-                return render(request, "auctions/listing.html", {
-                    "listing": listing,
-                    "bidForm": bidForm,
-                    "bids": bids
-                })
+                pass
     else: # Listing not active
-        return render(request, "auctions/listing.html", {
-            "listing": listing,
-            "message": getWinner(listing),
-            "bids": bids
-        })
+        context["message"] = getWinner(listing)
+    return render(request, "auctions/listing.html", context)
 
 def getWinner(listing):
     try:
@@ -178,7 +165,6 @@ def closeListing(request, listingID):
         listing.active = False
         listing.save()
     return HttpResponseRedirect(reverse("viewListing", args=[listingID]))
-
 
 @login_required
 def submitBid(request, listingID):
