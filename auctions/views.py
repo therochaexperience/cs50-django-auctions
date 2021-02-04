@@ -169,40 +169,29 @@ def closeListing(request, listingID):
 @login_required
 def submitBid(request, listingID):
     # how do client-side validation to check bidAmount is higher than listing.currentBid
+    listing = Listing.objects.get(pk=listingID)
+    bidForm = BidForm(request.POST)
     
-    if request.method == "GET":
-        return HttpResponseRedirect(reverse("viewListing", args=[listingID]))
-    else:
-        try:
-            listing = Listing.objects.get(pk=listingID)
-        except:
-            return HttpResponseRedirect(reverse("index"))
-        if request.user == listing.owner.id or not listing.active:
-            return HttpResponseRedirect(reverse("viewListing", args=[listingID]))
+    if bidForm.is_valid():
+        amount = bidForm.cleaned_data['amount']
+        if amount > listing.currentBid:
+            bid = Bid.create(
+                listing = listing,
+                user = User.objects.get(pk=request.user.id),
+                amount = bidForm.cleaned_data['amount'])
+            bid.save()
+            listing.currentBid = bid.amount
+            listing.save()
+            return HttpResponseRedirect(reverse("viewListing", args=[listing.id]))
 
-        bidForm = BidForm(request.POST)
-        invalid_bid_context = {
-            "listing": listing,
-            "on_watchList": True if request.user.watchList.filter(pk=listingID).count() > 0 else False,
-            "bids": listing.bids_on_listing.all(),
-            "bidForm": bidForm,
-            "message": "Invalid bid"
-        }
-        if bidForm.is_valid(): # create bid record
-            amount = bidForm.cleaned_data['amount']
-            if amount > listing.currentBid:
-                bid = Bid.create(
-                    listing = listing,
-                    user = User.objects.get(pk=request.user.id),
-                    amount = bidForm.cleaned_data['amount'])
-                bid.save()
-                listing.currentBid = bid.amount
-                listing.save()
-                return HttpResponseRedirect(reverse("viewListing", args=[listing.id]))
-            else:
-                return render(request, "auctions/listing.html", invalid_bid_context)
-        else: # need validation error handling
-            return render(request, "auctions/listing.html", invalid_bid_context)
+    # Invalid bid
+    return render(request, "auctions/listing.html", {
+        "listing": listing,
+        "on_watchList": True if request.user.watchList.filter(pk=listingID).count() > 0 else False,
+        "bids": listing.bids_on_listing.all(),
+        "bidForm": bidForm,
+        "message": "Invalid bid"
+    })
 
 @login_required
 def add_watchList(request, listingID):
