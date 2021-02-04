@@ -1,6 +1,6 @@
 from django.forms import ModelForm
 from django import forms
-from .models import Listing, Bid
+from .models import Listing, Bid, Comment
 
 class ListingForm(ModelForm): # how to create initial values
     class Meta:
@@ -13,4 +13,12 @@ class BidForm(ModelForm):
         fields = ['amount']
         labels = {
             "amount": "Bid Amount"
+        }
+
+class CommentForm(ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['content']
+        labels = {
+            "content": "Add Comment"
         }

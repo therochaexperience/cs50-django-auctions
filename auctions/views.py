@@ -8,8 +8,8 @@ from django.http import Http404
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
-from .models import User, Listing, Bid
-from .forms import ListingForm, BidForm
+from .models import User, Listing, Bid, Comment
+from .forms import ListingForm, BidForm, CommentForm
 
 # Views allowing anonymous users
 
@@ -135,6 +135,8 @@ def viewListing(request, listingID):
     except:
         return HttpResponseRedirect(reverse("index"))
     context["bids"] = listing.bids_on_listing.all()
+    context["comments"] = listing.comments_on_listing.all()
+    context["commentForm"] = CommentForm()
     if listing.active:
         if listing.owner.id == request.user.id:
             context["owner"] = True
@@ -171,7 +173,7 @@ def submitBid(request, listingID):
     # how do client-side validation to check bidAmount is higher than listing.currentBid
     listing = Listing.objects.get(pk=listingID)
     bidForm = BidForm(request.POST)
-    
+
     if bidForm.is_valid():
         amount = bidForm.cleaned_data['amount']
         if amount > listing.currentBid:
@@ -222,7 +224,16 @@ def categories(request): # treat like hashtags and allow users to add any they w
 
 @login_required
 def addComment(request, listingID):
-    pass
+    listing = Listing.objects.get(pk=listingID)
+    commentForm = CommentForm(request.POST)
+
+    if commentForm.is_valid():
+        comment = Comment.create(
+            listing = listing,
+            user = User.objects.get(pk=request.user.id),
+            content = commentForm.cleaned_data['content'])
+        comment.save()
+    return HttpResponseRedirect(reverse("viewListing", args=[listing.id]))
 
 @login_required
 def deleteComment(request, listingID):
