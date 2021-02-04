@@ -129,19 +129,16 @@ def updateListing(request, listingID):
 
 @login_required
 def viewListing(request, listingID):
-    # what is post request is sent?
     try:
         listing = Listing.objects.get(pk=listingID)
     except:
         return HttpResponseRedirect(reverse("index"))
     bids = listing.bids_on_listing.all()
+    context = {"listing":listing, "bids": bids}
     if listing.active:
         if listing.owner.id == request.user.id:
-            return render(request, "auctions/listing.html", {
-                "listing": listing,
-                "owner": True,
-                "bids": bids
-            })
+            context["owner"] = True
+            return render(request, "auctions/listing.html", context)
         else:
             bidForm = BidForm()
             try: # DRY?
@@ -159,18 +156,17 @@ def viewListing(request, listingID):
                     "bids": bids
                 })
     else: # Listing not active
-        # add redirect to index with error message stating that listing is no longer active
-        # can only view inactive listings if logged in and owner
-        try:
-            winner = listing.bids_on_listing.last().user
-            message = f'Winning user is {listing.bids_on_listing.last().user}'
-        except:
-            message = "No bids were made on this listing"
         return render(request, "auctions/listing.html", {
             "listing": listing,
-            "message": message,
+            "message": getWinner(listing),
             "bids": bids
         })
+
+def getWinner(listing):
+    try:
+        return f'Winning user is {listing.bids_on_listing.last().user}'
+    except:
+        return "No bids were made on this listing"
 
 @login_required
 def closeListing(request, listingID):
@@ -178,16 +174,11 @@ def closeListing(request, listingID):
         listing = Listing.objects.get(pk=listingID)
     except:
         return HttpResponseRedirect(reverse("index"))
-    try:
-        winner = listing.bids_on_listing.last().user
-        print(winner)
-    except:
-        print("No bids were made on this listing")
     if request.user == listing.owner:
         listing.active = False
         listing.save()
-        return HttpResponseRedirect(reverse("viewListing", args=[listingID])) # last bid will be winning bid, because only highest bidwill be allowed
-    #     return HttpResponseRedirect(reverse("viewListing", args=[listingID]))
+    return HttpResponseRedirect(reverse("viewListing", args=[listingID]))
+
 
 @login_required
 def submitBid(request, listingID):
@@ -263,9 +254,11 @@ def deleteComment(request, listingID):
     pass
 
 # def viewUser
+    # see a user's profile
+    # shows username, date joined
 
-# def viewBids
-
+# def viewUserBids
+    # see all bids created by the logged in user
 
 # improve front end layout - bootstrap
 # https://docs.djangoproject.com/en/3.1/topics/i18n/timezones/ render template with local timezone

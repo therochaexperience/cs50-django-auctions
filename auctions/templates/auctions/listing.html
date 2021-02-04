@@ -12,7 +12,7 @@
 
     {% if owner %}
         <a class="nav-link" href="{% url 'updateListing' listing.id %}">Update Listing</a>
-        <a class="nav-link" href="{% url 'closeListing' listing.id %}">Close the Auction</a>
+        <a class="nav-link" href="{% url 'closeListing' listing.id %}">Close the Listing</a>
     {% else %}
         {% if listing.active %}
             {% if on_watchList %}
@@ -37,7 +37,7 @@
     <h5>Details</h5>
     <!-- add image of listing -->
     <ul>
-        <li><strong>Current Bid:</strong> ${{ listing.currentBid }}</li> <!--hardcoded currency symbol, better option? -->
+        <li><strong>Current Highest Bid:</strong> ${{ listing.currentBid }}</li> <!--hardcoded currency symbol, better option? how to get username of highest bid -->
         <li><strong>Listed by:</strong> {{ listing.owner }}</li> <!--link to userpage-->
         <li><strong>Category:</strong> {{ listing.category }}</li> <!--link to category-->
         <li><strong>Description:</strong> {{ listing.description }}</li> <!--link to category-->
@@ -53,4 +53,16 @@
     {% else %}
         No bids have been made on this listing
     {% endif %}
+
+    <h5>Comments</h5>
+    {% if comments %}
+        {% for comment in comments %}
+        <li>
+                Comment Date/Time {{ bid.created_at }} Bid Amount: ${{ bid.amount }} by {{ bid.user }}
+        </li>
+        {% endfor %}
+    {% else %}
+        No comments have been made on this listing
+    {% endif %}
+
 {% endblock %}

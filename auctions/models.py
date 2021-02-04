@@ -91,8 +91,25 @@ class Bid(models.Model):
             amount = amount)
         return bid
 
-# comments
-    # which listing
-    # which user
-    # comment contents
-    # date
+class Comment(models.Model):
+    listing = models.ForeignKey(
+        Listing,
+        on_delete=models.CASCADE,
+        related_name="comments_on_listing"
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="comments_by_user"
+    )
+    content = models.TextField(max_length=1000)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+   
+    @classmethod # DRY?
+    def create(cls, listing, user, content):
+        comment = cls(
+            listing = listing,
+            user = user,
+            content = content)
+        return comment
