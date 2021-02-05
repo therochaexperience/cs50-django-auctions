@@ -7,5 +7,11 @@
         <strong>{{ message }}</strong>
     {% endif %}
     <h2>Categories</h2>
-    In development
+    {% for category in categories %}
+            <li>
+                <a href="">
+                    {{ category.category }}
+                </a>
+            </li>
+    {% endfor %}
 {% endblock %}

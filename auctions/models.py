@@ -5,17 +5,16 @@ from decimal import Decimal
 from django.utils import timezone
 
 class User(AbstractUser):
-    watchList = models.ManyToManyField('Listing') # Followers are Users that have added a Listing to their Watchlist; how to prevent owner from following their own Listing
+    watchList = models.ManyToManyField('Listing')
 
-    # add watchlist; one user can have many listings on his watchlist; one listing can be on many user's watchlist; many to many relationship
-    # how to get all listings created by a user?
-    # add permissions to edit a listing object instance
-        # has_view_permission()
-        # has_change_permission()
-        # has_delete_permission()
-    # user groups
-        # is it good practice to set a group per listing?
-
+class Category(models.Model):
+    name = models.CharField(max_length=25, primary_key=True) #, unique=True
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    @classmethod # DRY?
+    def create(cls, name):
+        category = cls(name = name)
+        return category
 
 class Listing(models.Model):
     title = models.CharField(max_length=50)
@@ -33,15 +32,20 @@ class Listing(models.Model):
         validators=[MinValueValidator(Decimal('0.01'))]
     )
     imageURL = models.URLField()
-    category = models.CharField(max_length=25)
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE,
+        related_name="listings",
+        default='0'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True) # what is this doing?
+    updated_at = models.DateTimeField(auto_now=True)
     active = models.BooleanField(default=False)
     #dateTimeEndListing = models.DateTimeField() # change to durationfield?; add to createListing form
     owner = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="listings",
+        related_name="listings_created",
         default='0')
 
     def __str__(self):
@@ -58,11 +62,6 @@ class Listing(models.Model):
             category=category,
             owner=userID)
         return listing
-
-
-    # add method to update listing end datetime
-
-    # a list of comments
 
 class Bid(models.Model):
     listing = models.ForeignKey(

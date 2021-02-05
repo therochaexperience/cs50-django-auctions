@@ -8,7 +8,7 @@ from django.http import Http404
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
-from .models import User, Listing, Bid, Comment
+from .models import User, Listing, Bid, Comment, Category
 from .forms import ListingForm, BidForm, CommentForm
 
 # Views allowing anonymous users
@@ -72,6 +72,14 @@ def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
 
+def category_handler(category):
+    try:
+        c = Category.objects.get(name=category)
+    except:
+        c = Category.create(name="category")
+        c.save()
+    return c
+
 @login_required
 def createListing(request):
     if request.method == "POST":
@@ -84,7 +92,7 @@ def createListing(request):
                 startingBid=data['startingBid'],
                 currentBid=data['startingBid'], # currentBid starts at startingBid; foreign key to bids table?
                 imageURL=data['imageURL'],
-                category=data['category'],
+                category=category_handler('category'),
                 userID=User.objects.get(pk=request.user.id)
             )
             listing.save()
@@ -109,7 +117,7 @@ def updateListing(request, listingID):
                 listing.description=data['description']
                 listing.startingBid=data['startingBid']
                 listing.imageURL=data['imageURL']
-                listing.category=data['category']
+                listing.category=category_handler('category')
                 listing.active=data['active']
                 listing.save()
                 return HttpResponseRedirect(reverse("viewListing", args=[listing.id]))
@@ -219,8 +227,12 @@ def view_watchList(request):
     })
 
 @login_required
-def categories(request): # treat like hashtags and allow users to add any they want? or provide preselected categories?
-    return render(request, "auctions/categories.html")
+def categories(request):
+    # https://docs.djangoproject.com/en/3.1/ref/models/querysets/#order-by
+    categories = list(Listing.objects.values('category'))
+    return render(request, "auctions/categories.html", {
+        "categories": sorted(categories, key = lambda i: i['category'])
+    })
 
 @login_required
 def addComment(request, listingID):
