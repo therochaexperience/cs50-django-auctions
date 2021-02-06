@@ -8,7 +8,7 @@ from django.http import Http404
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
-from .models import User, Listing, Bid, Comment, Category
+from .models import User, Listing, Bid, Comment
 from .forms import ListingForm, BidForm, CommentForm
 
 # Views allowing anonymous users
@@ -72,13 +72,13 @@ def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
 
-def category_handler(category):
-    try:
-        c = Category.objects.get(name=category)
-    except:
-        c = Category.create(name="category")
-        c.save()
-    return c
+# def category_handler(category):
+#     try:
+#         c = Category.objects.get(name=category)
+#     except:
+#         c = Category.create(name="category")
+#         c.save()
+#     return c
 
 @login_required
 def createListing(request):
@@ -92,8 +92,9 @@ def createListing(request):
                 startingBid=data['startingBid'],
                 currentBid=data['startingBid'], # currentBid starts at startingBid; foreign key to bids table?
                 imageURL=data['imageURL'],
-                category=category_handler('category'),
-                userID=User.objects.get(pk=request.user.id)
+                category=data['category'],
+                userID=User.objects.get(pk=request.user.id),
+                active=data['active']
             )
             listing.save()
             return HttpResponseRedirect(reverse("viewListing", args=[listing.id]))
@@ -108,7 +109,7 @@ def createListing(request):
 @login_required
 def updateListing(request, listingID):
     listing = Listing.objects.get(pk=listingID)
-    if request.user.id == listing.owner.id and listing.active:
+    if request.user.id == listing.owner.id: #and listing.active: ###################
         if request.method == "POST":
             form = ListingForm(request.POST)
             if form.is_valid():
@@ -117,7 +118,7 @@ def updateListing(request, listingID):
                 listing.description=data['description']
                 listing.startingBid=data['startingBid']
                 listing.imageURL=data['imageURL']
-                listing.category=category_handler('category')
+                listing.category=data['category']
                 listing.active=data['active']
                 listing.save()
                 return HttpResponseRedirect(reverse("viewListing", args=[listing.id]))
@@ -157,6 +158,7 @@ def viewListing(request, listingID):
                 pass
     else: # Listing not active
         context["message"] = getWinner(listing)
+        context["owner"] = True      ############################################################################
     return render(request, "auctions/listing.html", context)
 
 def getWinner(listing):
@@ -200,7 +202,9 @@ def submitBid(request, listingID):
         "on_watchList": True if request.user.watchList.filter(pk=listingID).count() > 0 else False,
         "bids": listing.bids_on_listing.all(),
         "bidForm": bidForm,
-        "message": "Invalid bid"
+        "message": "Invalid bid",
+        "comments": listing.comments_on_listing.all(),
+        "commentForm": CommentForm()
     })
 
 @login_required
@@ -229,7 +233,8 @@ def view_watchList(request):
 @login_required
 def categories(request):
     # https://docs.djangoproject.com/en/3.1/ref/models/querysets/#order-by
-    categories = list(Listing.objects.values('category'))
+    categories = Listing.objects.values('id','category')
+    print(categories)
     return render(request, "auctions/categories.html", {
         "categories": sorted(categories, key = lambda i: i['category'])
     })

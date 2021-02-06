@@ -7,15 +7,6 @@ from django.utils import timezone
 class User(AbstractUser):
     watchList = models.ManyToManyField('Listing')
 
-class Category(models.Model):
-    name = models.CharField(max_length=25, primary_key=True) #, unique=True
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    @classmethod # DRY?
-    def create(cls, name):
-        category = cls(name = name)
-        return category
-
 class Listing(models.Model):
     title = models.CharField(max_length=50)
     description = models.TextField(max_length=1000)
@@ -32,15 +23,14 @@ class Listing(models.Model):
         validators=[MinValueValidator(Decimal('0.01'))]
     )
     imageURL = models.URLField()
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.CASCADE,
-        related_name="listings",
-        default='0'
-    )
+
+    CategoryType = models.TextChoices('CategoryType', 
+    'Books Computers Electronics Events Food Games Home Outdoors RANDOM')
+    category = models.CharField(max_length=25, choices=CategoryType.choices)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    active = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
     #dateTimeEndListing = models.DateTimeField() # change to durationfield?; add to createListing form
     owner = models.ForeignKey(
         User,
@@ -52,7 +42,7 @@ class Listing(models.Model):
         return f"Listing {self.id}: {self.title} by User: {self.owner}"
 
     @classmethod # DRY?
-    def create(cls, title, description, startingBid, currentBid, imageURL, category, userID):
+    def create(cls, title, description, startingBid, currentBid, imageURL, category, userID, active):
         listing = cls(
             title=title,
             description=description,
@@ -60,7 +50,8 @@ class Listing(models.Model):
             currentBid=currentBid,
             imageURL=imageURL,
             category=category,
-            owner=userID)
+            owner=userID,
+            active=active)
         return listing
 
 class Bid(models.Model):
