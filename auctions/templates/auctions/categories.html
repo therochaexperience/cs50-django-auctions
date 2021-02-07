@@ -7,11 +7,20 @@
         <strong>{{ message }}</strong>
     {% endif %}
     <h2>Categories</h2>
-    {% for category in categories %}
+    {% for category, listings in listings_by_category.items %}
+        <ul>    
             <li>
-                <a href="">
-                    {{ category.category }}
-                </a>
+                {{ category }}
+                {% for listing in listings %}
+                <ul>    
+                    <li>
+                        <a href="{% url 'viewListing' listing.0 %}">
+                            {{ listing.1 }}
+                        </a>
+                    </li>
+                </ul>
+                {% endfor %}
             </li>
+        </ul>
     {% endfor %}
 {% endblock %}

@@ -8,6 +8,8 @@ from django.http import Http404
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
+from collections import defaultdict, OrderedDict
+
 from .models import User, Listing, Bid, Comment
 from .forms import ListingForm, BidForm, CommentForm
 
@@ -87,7 +89,7 @@ def createListing(request):
         if form.is_valid(): # check if listing exists? all listings are unique by pk. other fields to set unique by?
             data = form.cleaned_data
             listing = Listing.create(
-                title=data['title'],
+                title=data['title'].title(),
                 description=data['description'],
                 startingBid=data['startingBid'],
                 currentBid=data['startingBid'], # currentBid starts at startingBid; foreign key to bids table?
@@ -114,7 +116,7 @@ def updateListing(request, listingID):
             form = ListingForm(request.POST)
             if form.is_valid():
                 data = form.cleaned_data
-                listing.title = data['title']
+                listing.title = data['title'].title()
                 listing.description=data['description']
                 listing.startingBid=data['startingBid']
                 listing.imageURL=data['imageURL']
@@ -232,11 +234,18 @@ def view_watchList(request):
 
 @login_required
 def categories(request):
-    # https://docs.djangoproject.com/en/3.1/ref/models/querysets/#order-by
-    categories = Listing.objects.values('id','category')
-    print(categories)
+    # Creates a dictionary that groups all listings by category. Category is the key. The value is
+    # a list of all listings that are under the category. Each listing is a represented by a list
+    # where the first element is the listing ID and the second element is the listing title.
+
+    listings = list(Listing.objects.values_list('category','id', 'title').order_by('title'))
+    listings_by_category = defaultdict(list)
+    for listing in listings:
+        l = [listing[1], listing[2]]
+        listings_by_category[listing[0]].append(l)
+    listings_by_category.default_factory = None
     return render(request, "auctions/categories.html", {
-        "categories": sorted(categories, key = lambda i: i['category'])
+        "listings_by_category": OrderedDict(sorted(listings_by_category.items()))
     })
 
 @login_required
