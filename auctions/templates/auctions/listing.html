@@ -8,11 +8,11 @@
         <strong>{{ message }}</strong>
     {% endif %}
 
-    <h2>Listing: {{ listing.title }}</h2>
-
+    <h2>{{ listing.title }}</h2>
+    <br>
     {% if owner %}
-        <a class="nav-link" href="{% url 'updateListing' listing.id %}">Update Listing</a>
-        <a class="nav-link" href="{% url 'closeListing' listing.id %}">Close the Listing</a>
+        <a href="{% url 'updateListing' listing.id %}">Update Listing</a>
+        <a href="{% url 'closeListing' listing.id %}">Close the Listing</a>
     {% else %}
         {% if listing.active %}
             {% if on_watchList %}
@@ -26,11 +26,7 @@
                     <input class="btn btn-primary" type="submit" value="Add to Watchlist">
                 </form>
             {% endif %}
-            <form action="{% url 'submitBid' listing.id %}" method="post">
-                {% csrf_token %}
-                {{ bidForm }}
-                <input class="btn btn-primary" type="submit" value="Submit a Bid">
-            </form>
+            <br>
         {% endif %}
     {% endif %}
   
@@ -42,8 +38,16 @@
         <li><strong>Category:</strong> {{ listing.category }}</li> <!--link to category-->
         <li><strong>Description:</strong> {{ listing.description }}</li> <!--link to category-->
     </ul>
-
+    <hr>
     <h5>Bids</h5>
+        {% if listing.active and not owner %}
+            <form action="{% url 'submitBid' listing.id %}" method="post">
+                {% csrf_token %}
+                {{ bidForm }}
+                <input class="btn btn-primary" type="submit" value="Submit a Bid">
+            </form>
+        {% endif %}
+        <br>
     {% if bids %}
         {% for bid in bids %}
         <li>
@@ -53,13 +57,8 @@
     {% else %}
         No bids have been made on this listing
     {% endif %}
-
+    <hr>
     <h5>Comments</h5>
-    <form action="{% url 'addComment' listing.id %}" method="post">
-        {% csrf_token %}
-        {{ commentForm }}
-        <input class="btn btn-primary" type="submit" value="Add Comment">
-    </form>
     {% if comments %}
         {% for comment in comments %}
         <li>
@@ -69,5 +68,11 @@
     {% else %}
         No comments have been made on this listing
     {% endif %}
-
+    <br>
+    <br>
+    <form action="{% url 'addComment' listing.id %}" method="post">
+        {% csrf_token %}
+        {{ commentForm.content }}<br>
+        <input class="btn btn-primary" type="submit" value="Add Comment">
+    </form>
 {% endblock %}

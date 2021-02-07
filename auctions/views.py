@@ -111,7 +111,7 @@ def createListing(request):
 @login_required
 def updateListing(request, listingID):
     listing = Listing.objects.get(pk=listingID)
-    if request.user.id == listing.owner.id: #and listing.active: ###################
+    if request.user.id == listing.owner.id and listing.active:
         if request.method == "POST":
             form = ListingForm(request.POST)
             if form.is_valid():
@@ -160,7 +160,7 @@ def viewListing(request, listingID):
                 pass
     else: # Listing not active
         context["message"] = getWinner(listing)
-        context["owner"] = True      ############################################################################
+        
     return render(request, "auctions/listing.html", context)
 
 def getWinner(listing):
@@ -269,8 +269,10 @@ def deleteComment(request, listingID):
     # see a user's profile
     # shows username, date joined
 
-# def viewUserBids
+@login_required
+def viewUserBids(request):
     # see all bids created by the logged in user
+    pass
 
 # improve front end layout - bootstrap
 # https://docs.djangoproject.com/en/3.1/topics/i18n/timezones/ render template with local timezone

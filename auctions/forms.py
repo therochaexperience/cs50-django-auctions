@@ -6,6 +6,10 @@ class ListingForm(ModelForm): # how to create initial values
     class Meta:
         model = Listing
         fields = ['title', 'description', 'startingBid', 'imageURL', 'category', 'active']
+        labels = {
+            "startingBid": "Starting Bid",
+            "imageURL": "Image URL"
+        }
 
 class BidForm(ModelForm):
     class Meta:
