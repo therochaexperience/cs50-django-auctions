@@ -161,7 +161,7 @@ def viewListing(request, listingID):
                 pass
     else: # Listing not active
         context["message"] = getWinner(listing)
-        
+    print(listing.imageURL)
     return render(request, "auctions/listing.html", context)
 
 def getWinner(listing):

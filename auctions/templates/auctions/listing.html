@@ -10,9 +10,11 @@
 
     <h2>{{ listing.title }}</h2>
     <br>
+
+    <img src="{{ listing.imageURL }}" alt="no image provided"><br><br>
     {% if owner %}
-        <a href="{% url 'updateListing' listing.id %}">Update Listing</a>
-        <a href="{% url 'closeListing' listing.id %}">Close the Listing</a>
+        <a href="{% url 'updateListing' listing.id %}">Update Listing</a> <br>
+        <a href="{% url 'closeListing' listing.id %}">Close the Listing</a> <br><br>
     {% else %}
         {% if listing.active %}
             {% if on_watchList %}

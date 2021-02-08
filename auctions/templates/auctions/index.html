@@ -12,8 +12,11 @@
             <li>
                 <a href="{% url 'viewListing' listing.id %}">
                     Listing {{ listing.id }}: {{ listing.title }} by {{ listing.owner }} created on {{ listing.created_at}}
-                </a>
+                </a><br><br>
+                <img src="{{ listing.imageURL }}" alt="no image provided"><br>
             </li>
+            <br>
+            <hr>
         {% endif %}
     {% endfor %}
     <h2>Closed Listings</h2>
