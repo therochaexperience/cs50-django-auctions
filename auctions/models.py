@@ -81,6 +81,9 @@ class Bid(models.Model):
             amount = amount)
         return bid
 
+    def __str__(self):
+        return f"Bid {self.id} on Listing {self.listing.title} by User: {self.user}"
+
 class Comment(models.Model):
     listing = models.ForeignKey(
         Listing,
