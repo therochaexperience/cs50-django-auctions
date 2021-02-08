@@ -25,7 +25,7 @@
             </li>
             {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link" href="">Your Bids</a>
+                    <a class="nav-link" href="{% url 'viewUserBids' %}">Your Bids</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'view_watchList' %}">Watchlist</a> <!--add widget showing number of items in watchlist-->

@@ -9,6 +9,7 @@ from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
 from collections import defaultdict, OrderedDict
+import operator
 
 from .models import User, Listing, Bid, Comment
 from .forms import ListingForm, BidForm, CommentForm
@@ -210,6 +211,17 @@ def submitBid(request, listingID):
     })
 
 @login_required
+def viewUserBids(request):
+    # see the last bid placed by the logged in user on all listings
+    bids = list(request.user.bids_by_user.all())
+    keyfun = operator.attrgetter("listing.id")
+    bids.sort(key=keyfun)
+    return render(request, "auctions/userBids.html", {
+        "bids": bids
+    })
+
+
+@login_required
 def add_watchList(request, listingID):
     # Add a listing to a User's watchlist; assumes user is not owner of listing
     listing = Listing.objects.get(pk=listingID)
@@ -268,11 +280,6 @@ def deleteComment(request, listingID):
 # def viewUser
     # see a user's profile
     # shows username, date joined
-
-@login_required
-def viewUserBids(request):
-    # see all bids created by the logged in user
-    pass
 
 # improve front end layout - bootstrap
 # https://docs.djangoproject.com/en/3.1/topics/i18n/timezones/ render template with local timezone
