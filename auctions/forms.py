@@ -2,7 +2,7 @@ from django.forms import ModelForm
 from django import forms
 from .models import Listing, Bid, Comment
 
-class ListingForm(ModelForm): # how to create initial values
+class ListingForm(ModelForm):
     class Meta:
         model = Listing
         fields = ['title', 'description', 'startingBid', 'imageURL', 'category', 'active']

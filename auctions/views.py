@@ -1,3 +1,4 @@
+# DJANGO MODULES
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
@@ -8,19 +9,19 @@ from django.http import Http404
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 
+# PYTHON MODULES
 from collections import defaultdict, OrderedDict
 import operator
 
 from .models import User, Listing, Bid, Comment
 from .forms import ListingForm, BidForm, CommentForm
 
-# Views allowing anonymous users
+# VIEWS ALLOWING ANONYMOUS USERS
 
 def index(request):
-    #print (Listing.objects.all())
-    # add error and errormessage
+    # Renders all active listings on a home page view.
     return render(request, "auctions/index.html", {
-        "listings": Listing.objects.all() # query for only active listings
+        "listings": Listing.objects.all()
     })
 
 def login_view(request):
@@ -75,25 +76,17 @@ def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
 
-# def category_handler(category):
-#     try:
-#         c = Category.objects.get(name=category)
-#     except:
-#         c = Category.create(name="category")
-#         c.save()
-#     return c
-
 @login_required
 def createListing(request):
     if request.method == "POST":
         form = ListingForm(request.POST)
-        if form.is_valid(): # check if listing exists? all listings are unique by pk. other fields to set unique by?
+        if form.is_valid():
             data = form.cleaned_data
             listing = Listing.create(
                 title=data['title'].title(),
                 description=data['description'],
                 startingBid=data['startingBid'],
-                currentBid=data['startingBid'], # currentBid starts at startingBid; foreign key to bids table?
+                currentBid=data['startingBid'],
                 imageURL=data['imageURL'],
                 category=data['category'],
                 userID=User.objects.get(pk=request.user.id),
@@ -101,7 +94,7 @@ def createListing(request):
             )
             listing.save()
             return HttpResponseRedirect(reverse("viewListing", args=[listing.id]))
-        else: # need validation error handling
+        else:
             raise Http404
     else:
         form = ListingForm()
@@ -146,8 +139,8 @@ def viewListing(request, listingID):
         context = {"listing":listing}
     except:
         return HttpResponseRedirect(reverse("index"))
-    context["bids"] = listing.bids_on_listing.all()
-    context["comments"] = listing.comments_on_listing.all()
+    context["bids"] = listing.bids_on_listing.all().order_by('-created_at')
+    context["comments"] = listing.comments_on_listing.all().order_by('-created_at')
     context["commentForm"] = CommentForm()
     if listing.active:
         if listing.owner.id == request.user.id:
@@ -161,7 +154,6 @@ def viewListing(request, listingID):
                 pass
     else: # Listing not active
         context["message"] = getWinner(listing)
-    print(listing.imageURL)
     return render(request, "auctions/listing.html", context)
 
 def getWinner(listing):
@@ -252,10 +244,11 @@ def categories(request):
 
     listings = list(Listing.objects.values_list('category','id', 'title').order_by('title'))
     listings_by_category = defaultdict(list)
+    print(listings_by_category)    
     for listing in listings:
         l = [listing[1], listing[2]]
         listings_by_category[listing[0]].append(l)
-    listings_by_category.default_factory = None
+    print(listings_by_category)
     return render(request, "auctions/categories.html", {
         "listings_by_category": OrderedDict(sorted(listings_by_category.items()))
     })
@@ -276,11 +269,3 @@ def addComment(request, listingID):
 @login_required
 def deleteComment(request, listingID):
     pass
-
-# def viewUser
-    # see a user's profile
-    # shows username, date joined
-
-# improve front end layout - bootstrap
-# https://docs.djangoproject.com/en/3.1/topics/i18n/timezones/ render template with local timezone
-# how apply decorator to multiple views
